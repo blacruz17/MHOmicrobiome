@@ -13,7 +13,7 @@ library(gtsummary)
 library(rstatix)
 
 ## ----load------------------------------------------------------------------------------------------------------------
-physeq <- readRDS("../adj_physeq_MMUPHIN_mpa30_20240911.rds")
+physeq <- readRDS("..data//physeqMHO.rds")
 pal <- c("#264653", "#2A9D8F", "#703d57", "#edafb8", "#e6af2e")
 
 
@@ -43,7 +43,6 @@ stat.test <- alphadiv_df %>%
   select(MetObesity, 
          chao1, diversity_gini_simpson,
          diversity_shannon) %>% 
-   # %>% 
   reshape2::melt(id.vars = "MetObesity") %>% 
   mutate(variable2 = variable) %>%
   group_by(variable2) %>%
@@ -106,7 +105,7 @@ alpha.p
 
 ## ----saveAlphaPlot---------------------------------------------------------------------------------------------------
 alpha.p
-ggsave("./alphaPvalues_DunnTest_20250225.png",
+ggsave("../figures/alphaDiv.png",
        width = 8, height = 3.15, units = "in", dpi = 1200)
 
 
@@ -225,5 +224,5 @@ beta.p <- p1 + p2 + p3 & theme(axis.text = element_text(size = 12),
 
 ## ----saveBetaPlot----------------------------------------------------------------------------------------------------
 beta.p
-ggsave("./betaAitchi3Axes_20250116.png",
+ggsave("../figures/betaDiv.png",
        width = 8, height = 2.65, units = "in", dpi = 1200)

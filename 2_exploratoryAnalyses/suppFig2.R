@@ -1,5 +1,3 @@
-rm(list = ls())
-
 library(curatedMetagenomicData)
 library(tidyverse)
 library(janitor)
@@ -14,7 +12,7 @@ library(gt)
 
 
 
-karlsson <- read_excel("suppKarlsson_PMID23719380.xlsx",
+karlsson <- read_excel("../data/suppKarlsson_PMID23719380.xlsx",
                    sheet = "Supplementary Table 3",
                    skip = 1) %>%
   clean_names()
@@ -44,7 +42,7 @@ feng <- sampleMetadata %>%
   clean_names() %>%
   select(where(~ !all(is.na(.x))))
 
-feng <- read_excel("suppFeng_PMID25758642.xlsx",
+feng <- read_excel("../data/suppFeng_PMID25758642.xlsx",
                    sheet = "SD 1",
                    skip = 3,
                    na = c("", "NA", "n.a.")) %>%
@@ -54,12 +52,10 @@ feng <- feng %>%
   filter(state == "controls") %>% 
   mutate(obese = if_else(bmi >= 30, 'O', 'NO', 'missing')) %>%
   mutate(met_health = if_else(
-    # medicacion / enfermedad
     fatty_liver_in_ultrasound_1_yes_0_no == 0 &
       diabetes_1_yes_0_no == 0 &
       hypertension_1_yes_0_no == 0 &
       met_s_1_yes_0_no == 0 &
-      # parametros bioquimicos
       fasting_glucose_mg_l <= 100 &
       tg_mg_l <= 150 &
       ((gender_1_male_2_female == 1 & hdl_mg_l > 40)|
@@ -77,9 +73,7 @@ hmp <- sampleMetadata %>%
   clean_names() %>%
   select(where(~ !all(is.na(.x)))) %>%
   mutate(met_health = if_else(
-    # medicacion / enfermedad
     disease == "healthy" &
-      # parametros bioquimicos
       glucose <= 100 &
       triglycerides <= 150 &
       ((gender == "male" & hdl > 40)|
@@ -119,7 +113,7 @@ hmp <- rbind(hmp.part1, hmp.part2)
 
 summary(as.factor(hmp$subject_id))
 
-hmp_extra <- read_excel("suppHMP_PMID31142858.xlsx",
+hmp_extra <- read_excel("../data/suppHMP_PMID31142858.xlsx",
                         sheet = "S1_Subjects") %>%
   clean_names() %>%
   mutate(obese = if_else(bmi >= 30, "O", "NO"))
@@ -148,7 +142,7 @@ metacard %>%
     separate_rows(treatment, sep = ";") %>% pull(treatment) %>% unique()
 metacard %>% select(study_condition, disease) %>% distinct()
 
-ages.mc <- readxl::read_excel("suppMetaCardis_PMID35177860_limpio.xlsx") %>%
+ages.mc <- readxl::read_excel("../data/suppMetaCardis_PMID35177860.xlsx") %>%
   
   rename(sample_id = id, age = age_years) %>%
   select(sample_id, age) %>% # "x12MCx3370" 
@@ -226,7 +220,6 @@ feng <- feng %>%
   mutate(subject_id = as.character(subject_id),
          whr = as.numeric(whr),
          gender = if_else(gender == 1, "male", "female")) %>%
-  # crear columna disease
   mutate(disease = case_when(
     diabetes == 0 & hypertension == 0 & mets == 0 & fattyliver == 1 ~ "fattyliver",
     diabetes == 0 & hypertension == 1 & mets == 1 & fattyliver == 0 ~ "hypertension;MetS",
@@ -239,6 +232,7 @@ feng <- feng %>%
     diabetes == 1 & hypertension == 1 & mets == 1 & fattyliver == 0 ~ "diabetes;hypertension;MetS",
     diabetes == 1 & hypertension == 0 & mets == 1 & fattyliver == 1 ~ "diabetes;MetS;fattyliver")) %>%
   select(-c(diabetes, hypertension, mets, fattyliver))
+
 ## HMP 2019 --------------------------------------------------------------------
 hmp <- hmp[ , c(1:3, 5:7, 9, 21, 23:48, 50:57)] %>%
   select(-c(study_condition, location, population, consented, class, ethnicity, 
@@ -258,7 +252,8 @@ metacardis <- metacard %>%
          hscrp = hs_crp) %>%
   filter(MetObesity %in% c("MHO", "MHNO", "MUO", "MUNO"))
 
-ai4food <- read_csv("tabla_mho_ai4food.csv") %>%
+## AI4Food ---------------------------------------------------------------------
+ai4food <- read_csv("../data/data_mho_ai4food.csv") %>%
   rename(subject_id = id_voluntario,
          gender = sexo) %>%
   mutate(sample_id = subject_id,
@@ -420,7 +415,7 @@ data <- data %>%
 
 
 ## ----subsetSamples---------------------------------------------------------------------------------------------------
-physeq <- readRDS("adj_physeq_MMUPHIN_mpa30_20240911.rds")
+physeq <- readRDS("../data/physeqMHO.rds")
 data <- data %>% filter(sample_id %in% sample_names(physeq))
 rm(physeq)
 
@@ -573,85 +568,10 @@ p.metadata_exploration
 
 
 ## ----saveFig---------------------------------------------------------------------------------------------------------
-ggsave("./metadataExploration_DunnTest_20250225.png",
+ggsave("../figures/suppFig2.png",
        plot = p.metadata_exploration,
        bg = "white",
        height = 20,
        width = 14,
        units = "cm",
        dpi = 1200)
-
-
-## ----otherAnthropoPars-----------------------------------------------------------------------------------------------
-data %>%
-  filter(!is.na(met_health), !is.na(obese),
-         MetObesity != "missingmissing",
-         !is.na(gender)) %>% 
-  select(MetObesity, bmi) %>%
-  ggplot(aes(x = MetObesity, y = bmi)) +
-  geom_boxplot(aes(fill = MetObesity), 
-               alpha=.6,
-               outlier.shape = NA,
-               outlier.size = 2,
-               color = "black"
-  ) +
-  geom_jitter(aes(shape = MetObesity, color = MetObesity),
-              width = .2,
-              size = .8) +
-  scale_color_manual(values = pal,
-                     aesthetics = c("fill", "color"),
-                     name = "") +
-  theme_bw() +
-  theme(
-    legend.position = "none"
-  )
-
-
-data %>%
-  filter(!is.na(met_health), !is.na(obese),
-         MetObesity != "missingmissing",
-         !is.na(gender)) %>% 
-  select(MetObesity, waist, hip, whr) %>%
-  reshape2::melt(id.vars = "MetObesity") %>%
-  filter(!is.na(value)) %>%
-  ggplot(aes(x = MetObesity, y = value)) +
-  geom_boxplot(aes(fill = MetObesity), 
-               alpha=.6,
-               outlier.shape = NA,
-               outlier.size = 2,
-               color = "black"
-  ) +
-  geom_jitter(aes(shape = MetObesity, color = MetObesity),
-              width = .2,
-              size = .8) +
-  scale_color_manual(values = pal,
-                     aesthetics = c("fill", "color"),
-                     name = "") +
-  theme_bw() +
-  theme(
-    legend.position = "none"
-  ) +
-  facet_wrap(. ~variable, scales = "free_y")
-
-data %>%
-  filter(!is.na(met_health), !is.na(obese),
-         MetObesity != "missingmissing",
-         !is.na(gender)) %>%
-  select(MetObesity, bmi) %>%
-  mutate(class = case_when(bmi <= 18.5            ~ "Underweight",
-                           bmi >= 18.5 & bmi < 25 ~ "Normal weight",
-                           bmi >= 25   & bmi < 30 ~ "Overweight",
-                           bmi >= 30   & bmi < 35 ~ "ClassI",
-                           bmi >= 35   & bmi < 40 ~ "ClassII",
-                           bmi >= 40              ~ "ClassIII")) %>%
-  mutate(class = as.factor(class)) %>%
-  group_by(MetObesity) %>%
-  mutate(total = n()) %>%
-  group_by(MetObesity, class) %>%
-  mutate(classGroup = n()) %>%
-  arrange(MetObesity) %>%
-  ungroup() %>%
-  mutate(perClassGroup = 100 * classGroup/total) %>%
-  select(MetObesity, class, classGroup, perClassGroup) %>%
-  distinct()
-

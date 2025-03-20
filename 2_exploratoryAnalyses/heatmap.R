@@ -277,7 +277,7 @@ draw(ht_list,
      ht_gap = unit(2, "mm"))
 
 
-png("heatmap.png",
+png("../figures/heatmap.png",
     width = 15, height = 18, units = "cm", res=1200)
 draw(ht_list, 
      ht_gap = unit(2, "mm"))

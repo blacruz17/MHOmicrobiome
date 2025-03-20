@@ -1,33 +1,17 @@
-# Analisis Abundancia Diferencial ###############
 library(tidyverse)
 library(gridExtra)
 library(ggpubr)
 library(patchwork)
-
 library(phyloseq)
 library(microbiome)
 library(ANCOMBC)
 library(DT)
 library(doParallel)
+library(RColorBrewer)
+library(ggtext)
 
-
-
-iniDir <- "~/ai4food"
-setwd(paste0(iniDir, "/mho"))
-
-# load physeq objects:
-physeq <- readRDS("adj_physeq_MMUPHIN_mpa30_20240911.rds")
-# transformar a cuentas:
+physeq <- readRDS("../data/physeqMHO.rds")
 physeq.abs <- transform_sample_counts(physeq, function(x) round(1E6 * x))
-
-# ANCOM-BC W/ VIGNETTE RECOMMENDATIONS #########################################
-# To control the FDR arising from multiple testing, we opt for the
-# Holm-Bonferroni method over the Benjamini-Hochberg (BH) procedure,
-# especially when dealing with large sample sizes where statistical power
-# isn’t the primary concern. The Holm-Bonferroni method, accommodating
-# any dependence structure among p-values, is known to be robust against
-# inaccuracies in p-values, an issue often seen in DA analysis. Figures
-# below display only results significant after the Holm-Bonferroni adjustment.
 
 set.seed(123)
 cl <- makePSOCKcluster(4)
@@ -47,37 +31,10 @@ output = ancombc2(data = physeq.abs, tax_level = "Species",
                   em_control = list(tol = 1e-5, max_iter = 100),
                   lme_control = lme4::lmerControl(),
                   mdfdr_control = list(fwer_ctrl_method = "holm", B = 100),
-                  # trend_control = list(contrast = list(matrix(c(1, 0, -1, 1),
-                  #                                             nrow = 2, 
-                  #                                             byrow = TRUE),
-                  #                                      matrix(c(-1, 0, 1, -1),
-                  #                                             nrow = 2, 
-                  #                                             byrow = TRUE),
-                  #                                      matrix(c(1, 0, 1, -1),
-                  #                                             nrow = 2, 
-                  #                                             byrow = TRUE)),
-                  #                      node = list(2, 2, 1),
-                  #                      solver = "ECOS",
-                  #                      # B = 10
                                        )
 
-saveRDS(output, "./diffAbundance_jan25/ANCOMBC2_20250114.RDS")
 stopCluster(cl)
 
-## ANCOM-BC2 Multiple Pairwise Comparisons #####################################
-# The ANCOM-BC2 methodology for multiple pairwise comparisons is designed to 
-# identify taxa that exhibit differential abundance between any two groups 
-# within a set of three or more experimental groups, all while maintaining 
-# control over the mdFDR.
-# For instance, in our analysis focusing on the categories “lean”, “overweight”, 
-# and “obese”, the output provides: 1) log fold changes, 2) standard errors, 
-# 3) test statistics, 4) p-values, 5) adjusted p-values, 6) indicators denoting 
-# whether the taxon is differentially abundant (TRUE) or not (FALSE), and 7) 
-# indicators denoting whether the taxon passed the sensitivity analysis (TRUE) 
-# or not (FALSE).
-# In the subsequent heatmap, each cell represents a log fold-change (in natural 
-# log) value. Entries highlighted in black have successfully passed the 
-# sensitivity analysis for pseudo-count addition.
 res_pair = output$res_pair
 
 df_fig_pair1 = res_pair %>%
@@ -145,14 +102,11 @@ up = ceiling(max(df_fig_pair$value))
 mid = (lo + up)/2
 mid = 0
 
-library(RColorBrewer)
-library(ggtext)
 p <- df_fig_pair %>%
   mutate(taxon = gsub("_", " ", taxon)) %>%
   mutate(taxon = paste0("*", paste0(taxon, "*"))) %>%
   ggplot(aes(y = group, x = taxon, fill = value)) + 
   geom_tile(color = "gray50") +
-  # colores sacados de paleta de RColorBrewer RdBu
   scale_fill_gradient2(low = "#313695", high = "#A50026" , mid = "white" , 
                        na.value = "white" , midpoint = mid, limit = c(lo, up),
                        name = "LFC") +
@@ -167,7 +121,7 @@ p <- df_fig_pair %>%
 
 p
 
-ggsave("./diffAbundance_jan25/figANCOMBC2_v2.png",
+ggsave("../figures/diffAbundance.png",
        plot = p,
        bg = "white",
        height = 9.7,

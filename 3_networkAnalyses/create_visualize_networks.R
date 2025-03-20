@@ -5,8 +5,8 @@ library(genefilter)
 library(NetCoMi)
 
 # Data Import & Preprocessing #########
-(physeq <- readRDS("adj_physeq_MMUPHIN_mpa30_20240911.rds")) # 355 taxa
-any(rowSums(physeq@otu_table) == 0) # Bien.
+(physeq <- readRDS("../data/physeqMHO.rds")) # 355 taxa
+any(rowSums(physeq@otu_table) == 0) 
 
 (physeq.mho <- subset_samples(physeq, MetObesity == "MHO")) # 22 samples
 (physeq.muo <- subset_samples(physeq, MetObesity == "MUO")) # 437 samples
@@ -143,10 +143,10 @@ exportNet <- function(net, physeq, props, filename){
             quote = "needed")
 }
 
-exportNet(net.mho, physeq.mho, props.mho, "mho")
-exportNet(net.mhno, physeq.mhno, props.mhno, "mhno")
-exportNet(net.muo, physeq.muo, props.muo, "muo")
-exportNet(net.muno, physeq.muno, props.muno, "muno")
+exportNet(net.mho, physeq.mho, props.mho, "../data/mho")
+exportNet(net.mhno, physeq.mhno, props.mhno, "../data/mhno")
+exportNet(net.muo, physeq.muo, props.muo, "../data/muo")
+exportNet(net.muno, physeq.muno, props.muno, "../data/muno")
 
 stopCluster(cl)
 
@@ -176,7 +176,7 @@ levels(phyla.mhno) == levels(phyla.mho)
 pal_mho <- pal_12[c(1:6, 8, 9, 11, 12)]
 
 
-png("./mho.png",
+png("../figures/mho.png",
     width = 16,
     height = 16,
     units = "cm",
@@ -202,7 +202,7 @@ plot(mho.props,
 dev.off()
 
 
-png("./mhno.png",
+png("../figures/mhno.png",
     width = 16,
     height = 16,
     units = "cm",
@@ -227,7 +227,7 @@ plot(mhno.props,
      cexLabels=0)
 dev.off()
 
-png("./muno.png",,
+png("../figures/muno.png",,
     width = 16,
     height = 16,
     units = "cm",
@@ -252,7 +252,7 @@ plot(muno.props,
      cexLabels=0)
 dev.off()
 
-png("./muo.png",
+png("../figures/muo.png",
     width = 16,
     height = 16,
     units = "cm",

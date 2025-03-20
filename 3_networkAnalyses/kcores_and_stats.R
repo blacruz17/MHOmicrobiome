@@ -5,10 +5,10 @@ library(gt)
 library(ggtext)
 
 # K-Cores ######################################################################
-muo <- read_csv("MUO_kcores.csv") %>% mutate(class = "MUO")
-mho <- read_csv("MHO_kcores.csv") %>% mutate(class = "MHO")
-muno <- read_csv("MUNO_kcores.csv") %>% mutate(class = "MUNO")
-mhno <- read_csv("MHNO_kcores.csv") %>% mutate(class = "MHNO")
+muo <- read_csv("../data/MUO_kcores.csv") %>% mutate(class = "MUO")
+mho <- read_csv("../data/MHO_kcores.csv") %>% mutate(class = "MHO")
+muno <- read_csv("../data/MUNO_kcores.csv") %>% mutate(class = "MUNO")
+mhno <- read_csv("../data/MHNO_kcores.csv") %>% mutate(class = "MHNO")
 
 df <- rbind(muo, mho, muno, mhno) %>% 
   janitor::clean_names()
@@ -45,7 +45,7 @@ df_kcore  %>%
   ylab("% nodes with maximum *k*") 
 
 
-ggsave("./figKcores.png",
+ggsave("../figures/kcores.png",
        width = 15,
        height = 5,
        unit = "cm",
@@ -53,8 +53,8 @@ ggsave("./figKcores.png",
 
 
 # Node topology metrics ########################################################
-shortest_paths <- fromJSON("shortest_paths_paraKW_20250219.json")
-metrics <- read_csv("network_metrics_paraKW_20250219.csv")[, 2:6]
+shortest_paths <- fromJSON("../data/shortest_paths.json")
+metrics <- read_csv("../data/network_metrics.csv")[, 2:6]
 
 ## Kruskal-Wallis --------------------------------------------------------------
 metrics$red <- as.factor(metrics$Network)
@@ -67,7 +67,6 @@ print(kruskal_degree)
 print(kruskal_betweenness)
 print(kruskal_closeness)
 
-
 # Shortest path lengths --------------------------------------------------------
 df_paths <- do.call(rbind, lapply(names(shortest_paths), function(red) {
   data.frame(longitud = unlist(shortest_paths[[red]]), red = red)
@@ -75,5 +74,10 @@ df_paths <- do.call(rbind, lapply(names(shortest_paths), function(red) {
 
 df_paths$red <- as.factor(df_paths$red)
 
-kruskal_test <- kruskal.test(longitud ~ red, data = df_paths)
-print(kruskal_test)
+kruskal_spl <- kruskal.test(longitud ~ red, data = df_paths)
+print(kruskal_spl)
+
+# p-adj ------------------------------------------------------------------------
+p.adjust(c(kruskal_degree$p.value, kruskal_betweenness$p.value, 
+           kruskal_closeness$p.value, kruskal_spl$p.value),
+         method = "BH")
