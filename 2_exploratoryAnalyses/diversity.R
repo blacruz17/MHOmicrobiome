@@ -13,7 +13,7 @@ library(gtsummary)
 library(rstatix)
 
 ## ----load------------------------------------------------------------------------------------------------------------
-physeq <- readRDS("..data//physeqMHO.rds")
+physeq <- readRDS("..data/physeqMHO.rds")
 pal <- c("#264653", "#2A9D8F", "#703d57", "#edafb8", "#e6af2e")
 
 

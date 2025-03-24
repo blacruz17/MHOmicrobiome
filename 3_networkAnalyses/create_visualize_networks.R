@@ -143,10 +143,10 @@ exportNet <- function(net, physeq, props, filename){
             quote = "needed")
 }
 
-exportNet(net.mho, physeq.mho, props.mho, "../data/mho")
-exportNet(net.mhno, physeq.mhno, props.mhno, "../data/mhno")
-exportNet(net.muo, physeq.muo, props.muo, "../data/muo")
-exportNet(net.muno, physeq.muno, props.muno, "../data/muno")
+exportNet(net.mho, physeq.mho, props.mho, "../results/mho")
+exportNet(net.mhno, physeq.mhno, props.mhno, "../results/mhno")
+exportNet(net.muo, physeq.muo, props.muo, "../results/muo")
+exportNet(net.muno, physeq.muno, props.muno, "../results/muno")
 
 stopCluster(cl)
 

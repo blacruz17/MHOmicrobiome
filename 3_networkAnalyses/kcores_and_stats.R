@@ -5,10 +5,10 @@ library(gt)
 library(ggtext)
 
 # K-Cores ######################################################################
-muo <- read_csv("../data/MUO_kcores.csv") %>% mutate(class = "MUO")
-mho <- read_csv("../data/MHO_kcores.csv") %>% mutate(class = "MHO")
-muno <- read_csv("../data/MUNO_kcores.csv") %>% mutate(class = "MUNO")
-mhno <- read_csv("../data/MHNO_kcores.csv") %>% mutate(class = "MHNO")
+muo <- read_csv("../results/MUO_kcores.csv") %>% mutate(class = "MUO")
+mho <- read_csv("../results/MHO_kcores.csv") %>% mutate(class = "MHO")
+muno <- read_csv("../results/MUNO_kcores.csv") %>% mutate(class = "MUNO")
+mhno <- read_csv("../results/MHNO_kcores.csv") %>% mutate(class = "MHNO")
 
 df <- rbind(muo, mho, muno, mhno) %>% 
   janitor::clean_names()
@@ -53,8 +53,8 @@ ggsave("../figures/kcores.png",
 
 
 # Node topology metrics ########################################################
-shortest_paths <- fromJSON("../data/shortest_paths.json")
-metrics <- read_csv("../data/network_metrics.csv")[, 2:6]
+shortest_paths <- fromJSON("../results/shortest_paths.json")
+metrics <- read_csv("../results/network_metrics.csv")[, 2:6]
 
 ## Kruskal-Wallis --------------------------------------------------------------
 metrics$red <- as.factor(metrics$Network)
