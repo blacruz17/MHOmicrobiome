@@ -6,12 +6,11 @@ rm(list = ls())
 
 # Loading data ----
 library(phyloseq)
-physeq <- read_rds("./adj_physeq_MMUPHIN_mpa30_20240911.rds")
+physeq <- read_rds("../data/physeqMHO.rds")
 physeq <- microbiome::transform(physeq, "clr")
 set.seed(505)
 
 ## relative abundances table:
-
 data.RF <- data.frame(t(physeq@otu_table))
 colnames(data.RF) <- data.frame(physeq@tax_table)$Species
 
@@ -37,10 +36,10 @@ registerDoParallel(cl)
 inTrain <- createDataPartition(class.binary, 
                                p = 3/4, list = FALSE)
 # selects the corresponding samples:
-trainDescr <- readRDS("./trainDescr_basicBinary_ranger.rds")
-testDescr <- readRDS("./testDescr_basicBinary_ranger.rds")
-trainClass <- readRDS("./trainClass_basicBinary_ranger.rds")
-testClass <- readRDS("./testClass_basicBinary_ranger.rds")
+trainDescr <- readRDS("../results/trainDescr_binary.rds")
+trainClass <- readRDS("../results/trainClass_binary.rds")
+testDescr <- readRDS("../results/testDescr_binary.rds")
+testClass <- readRDS("../results/testClass_binary.rds")
 
 # these should be TRUE:
 dim(trainDescr)[1] == length(trainClass)
@@ -143,8 +142,6 @@ fit <- train(trainDescr,
 
 
 saveRDS(fit, "./svmLinearWeights.rds")
-
-
 
 # Stop Cluster ---------------------
 stopCluster(cl)

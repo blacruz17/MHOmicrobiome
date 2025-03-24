@@ -6,7 +6,7 @@ rm(list = ls())
 
 # Loading data -----------------------------------------------------------------
 library(phyloseq)
-physeq <- read_rds("./adj_physeq_MMUPHIN_mpa30_20240911.rds")
+physeq <- read_rds("../data/physeqMHO.rds")
 physeq <- microbiome::transform(physeq, "clr")
 set.seed(505)
 
@@ -36,16 +36,16 @@ inTrain <- createDataPartition(class.multi,
                                p = 3/4, list = FALSE)
 # selects the corresponding samples:
 trainDescr <- data.RF[inTrain, ]
-saveRDS(trainDescr, "./trainDescr_Multi_svm.rds")
+saveRDS(trainDescr, "./trainDescr_multi.rds")
 
 testDescr <- data.RF[-inTrain, ]
-saveRDS(testDescr, "./testDescr_Multi_svmr.rds")
+saveRDS(testDescr, "./testDescr_multi.rds")
 
 trainClass <- class.multi[inTrain]
-saveRDS(trainClass, "./trainClass_Multi_svm.rds")
+saveRDS(trainClass, "./trainClass_multi.rds")
 
 testClass <- class.multi[-inTrain]
-saveRDS(testClass, "./testClass_Multi_svm.rds")
+saveRDS(testClass, "./testClass_multi.rds")
 
 # these should be TRUE:
 dim(trainDescr)[1] == length(trainClass)
@@ -103,29 +103,6 @@ fit <- train(trainDescr,
 saveRDS(fit, "./svmRadialSigmaMulti.rds")
 
 
-## Radial + Weights ------------------------------------------------------------
-class_counts <- table(class.multi)
-total_samples <- sum(class_counts)
-num_classes <- length(class_counts)
-class_weights <- total_samples / (num_classes * class_counts)
-names(class_weights) <- levels(class.multi)
-print(class_weights)
-
-
-
-param.grid <- expand.grid(.sigma = 10^seq(-3, 3, length.out = 7),
-                          .C = 10^seq(-3, 3, length.out = 7),
-                          .Weight = class_weights)
-
-
-fit <- train(trainDescr, 
-             trainClass,
-             method = 'svmRadialWeights',
-             metric = "Kappa",
-             tuneGrid = param.grid,
-             trControl = fitControl)
-
-saveRDS(fit, "./svmRadialWeightsMulti.rds")
 
 # Stop Cluster -----------------------------------------------------------------
 stopCluster(cl)

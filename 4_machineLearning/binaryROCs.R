@@ -10,80 +10,68 @@ library(recipes)
 
 rm(list = ls())
 
-iniDir <- "~/ai4food"
-iniDir <- "C:/Users/blancalacruz/OneDrive - FUNDACION IMDEA-ALIMENTACION/Escritorio/AI4Food"
-setwd(paste0(iniDir, "/mho"))
-
-
 # Loading data ----
-physeq <- read_rds("./adj_physeq_MMUPHIN_mpa30_20240911.rds")
+physeq <- read_rds("../data/physeqMHO.rds")
 
-setwd(paste0(iniDir, "/mho/randomForest/mpav30_f1_mmuphin/cccFiles_jan25"))
-# selects the corresponding samples:
-trainDescr <- readRDS("trainDescr_basicBinary_ranger.rds")
-trainDescr1 <- readRDS("trainDescr_basicBinary.rds")
-trainClass <- readRDS("trainClass_basicBinary_ranger.rds")
-testDescr <- readRDS("testDescr_basicBinary_ranger.rds")
-testClass <- readRDS("testClass_basicBinary_ranger.rds")
+# selects the same samples:
+trainDescr <- readRDS("../results/trainDescr_binary.rds")
+trainClass <- readRDS("../results/trainClass_binary.rds")
+testDescr <- readRDS("../results/testDescr_binary.rds")
+testClass <- readRDS("../results/testClass_binary.rds")
 
 # these should be TRUE:
 dim(trainDescr)[1] == length(trainClass)
 dim(testDescr)[1] == length(testClass)
 # OK!
 
-# chequeo:
-all(trainDescr == trainDescr1)
-# Genial, podemos comparar en el mismo script todos los modelos binarios.
-
 ## Load models ------
 
-basic <- readRDS("basicBinary.rds") # F
-b.ranger <- readRDS("basicBinary_ranger.rds") # Kappa
-b.r.weights <- readRDS("basicBinary_ranger_weighted.rds")
-b.ranger.u <- readRDS("upsampledBinary_ranger.rds")
-b.ranger.d <- readRDS("downsampledBinary_ranger.rds")
-svmRadial <- readRDS("svmRadial.rds")
-svmRadialSigma <- readRDS("svmRadialSigma.rds")
-svmRadialWeights <- readRDS("svmRadialWeights.rds")
-svmRadialWeights.d <- readRDS("svmRadialWeights_downsampl.rds")
-svmRadialWeights.u <- readRDS("svmRadialWeights_upsampl.rds")
-svmLinearWeights <- readRDS("svmLinearWeights.rds")
-svmLinearWeights2 <- readRDS("svmLinearWeights2.rds")
-xgboost <- readRDS("fit_final_XGB_20250207.RDS")
+b.ranger <- readRDS("../results/basicBinary_ranger.rds") 
+b.r.weights <- readRDS("../results/basicBinary_ranger_weighted.rds")
+b.ranger.u <- readRDS("../results/upsampledBinary_ranger.rds")
+b.ranger.d <- readRDS("../results/downsampledBinary_ranger.rds")
+svmRadial <- readRDS("../results/svmRadial.rds")
+svmRadialSigma <- readRDS("../results/svmRadialSigma.rds")
+svmRadialWeights <- readRDS("../results/svmRadialWeights.rds")
+svmRadialWeights.d <- readRDS("../results/svmRadialWeights_downsampl.rds")
+svmRadialWeights.u <- readRDS("../results/svmRadialWeights_upsampl.rds")
+svmLinearWeights <- readRDS("../results/svmLinearWeights.rds")
+svmLinearWeights2 <- readRDS("../results/svmLinearWeights2.rds")
+xgboost <- readRDS("../results/finalFitXGB.RDS")
 
-# cotilleamos los modelos para quedarnos con lo mejor:
+# take a look at ranger models to get best version:
 res.b <- lapply(basic, function(x) x$results)
 res.b
 
-# res.b: nos quedamos el de 1000 arboles.
+# res.b: 1000 trees
 
 lapply(b.ranger, function(x){
   res <- x$results
   fit <- x$bestTune
   return(res %>% 
            inner_join(fit, by = c("mtry", "splitrule", "min.node.size")))})
-# b.ranger: nos quedamos con el de 100 arboles
+# b.ranger: 100 trees
 
 lapply(b.r.weights, function(x){
   res <- x$results
   fit <- x$bestTune
   return(res %>% 
            inner_join(fit, by = c("mtry", "splitrule", "min.node.size")))})
-# 100 arboles 
+# 100 trees 
 
 lapply(b.ranger.d, function(x){
   res <- x$results
   fit <- x$bestTune
   return(res %>% 
            inner_join(fit, by = c("mtry", "splitrule", "min.node.size")))})
-# 500
+# 500 trees
 
 lapply(b.ranger.u, function(x){
   res <- x$results
   fit <- x$bestTune
   return(res %>% 
            inner_join(fit, by = c("mtry", "splitrule", "min.node.size")))})
-# 100
+# 100 trees
 
 best_models <- c(basic["1000"], b.ranger["100"], b.r.weights["100"],
                  b.ranger.d["500"], b.ranger.u["100"])
@@ -118,15 +106,6 @@ result.roc
           legend.title = element_text(size = 24),
           axis.text = element_text(size = 20),
           legend.position = "none"))
-
-# write_rds(result.roc, "./ROCtesting.RDS")
-# 
-# ggsave("./originalmodelROC.png", plot = p.roc,
-#        width = 15,
-#        height = 14,
-#        units = "cm",
-#        dpi = 1200)
-
 
 # ROC: Ranger -----
 ranger.predicted.prob <- predict(best_models[["Ranger"]], 
@@ -181,12 +160,6 @@ weighted.roc
           legend.title = element_text(size = 24),
           axis.text = element_text(size = 20),
           legend.position = "none"))
-
-# ggsave("./upsampledmodelROC.png", plot = p.roc,
-#        width = 15,
-#        height = 14,
-#        units = "cm",
-#        dpi = 1200)
 
 # Ranger: Up ---------------
 ranger.u.predicted.prob <- predict(best_models[["Ranger + Upsampling"]], 
@@ -265,13 +238,6 @@ allROCs <- ggroc(list(
         legend.text = element_text(size = 10),
         axis.text = element_text(size = 10))
 allROCs
-
-ggsave("./binaryModelsRF_ROC.png", 
-       plot = allROCs,
-       width = 10,
-       height = 8,
-       units = "cm",
-       dpi = 1200)
 
 # Support Vector Machines ----------------------------
 ## Radial ---------------
@@ -457,14 +423,6 @@ allROCs <- ggroc(list(
         axis.text = element_text(size = 10))
 allROCs
 
-ggsave("./binaryModels_SVM_ROC.png", 
-       plot = allROCs,
-       width = 10,
-       height = 8,
-       units = "cm",
-       dpi = 1200)
-
-
 # XGBoost -------------------------------
 data_test <- testDescr
 data_test$MetHealth <- testClass
@@ -524,129 +482,4 @@ names(roclist.2) <- c(names(roclist)[2], names(roclist)[1], names(roclist)[3])
 
 
 # Save ROC list for future:
-saveRDS(roclist.2, "./binaryROC_20250212.RDS")
-
-allROCs <- ggroc(roclist.2,
-  # size = 1.5,
-  legacy.axes = TRUE) + 
-  labs(x = "False Positive Rate", 
-       y = "True Positive Rate") +
-  geom_segment(aes(x = 0, xend = 1, y = 0, yend = 1), 
-               color = "black", linetype = "dotted",
-               # linewidth = 1
-               ) +
-  scale_color_manual(values = viridis::viridis(length(roclist.2))) +
-  theme_bw() +
-  coord_equal()  +
-  theme(plot.title = element_blank(),
-        axis.title = element_text(size = 10),
-        axis.text = element_text(size = 8),
-        legend.title = element_blank(),
-        legend.text = element_text(size = 7),
-        legend.position = "bottom",
-        legend.direction = "vertical",
-        legend.key = element_rect(linewidth = .1, color = "white"),
-        legend.key.size = unit(1, "lines"))
-allROCs
-
-ggsave("./binaryModels_RF_SVM_XGB_ROC.png", 
-       plot = allROCs,
-       width = 3, height = 3, units = "in", dpi = 1200)
-
-# Variable importance plot -----
-features_to_plot <- 20
-
-svm.imp <- varImp(svmRadialWeights)$importance %>% 
-  as.data.frame() %>%
-  tibble::rownames_to_column() %>%
-  arrange(MU) %>%
-  slice_tail(n = features_to_plot)
-
-# ranger.imp <- varImp(best_models[["Ranger"]])$importance %>% 
-#   as.data.frame() %>%
-#   tibble::rownames_to_column() %>%
-#   arrange(MU) %>%
-#   slice_tail(n = features_to_plot)
-# 
-# xgboost.imp <- varImp(xgboost)$importance %>% 
-#   as.data.frame() %>%
-#   tibble::rownames_to_column() %>%
-#   arrange(MU) %>%
-#   slice_tail(n = features_to_plot)
-# 
-
-
-## SVM -----------------------------------------------------------------------
-svm.imp
-
-p2 <- svm.imp %>%
-  mutate(rowname = gsub("_", " ", rowname)) %>%
-  mutate(rowname = fct_inorder(rowname)) %>%
-  rename(feature = rowname) %>%
-  ggplot(aes(x = feature, 
-             y = MU))+
-  geom_segment( aes(x=feature, xend=feature,
-                    y=0, yend=MU), 
-                color="#5B8EFD",
-                linewidth = 1) +
-  geom_point( color="#5B8EFD", size=3) +
-  # scale_color_manual(values = '#21908CFF') +
-  coord_flip() +
-  labs(y = 'Feature Importance', x = 'Features',
-       fill = 'Model') +
-  theme_bw()  + 
-  theme(axis.title = element_text(size = 10),
-        axis.text = element_text(size = 8),
-        axis.text.y = element_text(face = "italic"),
-        legend.position = 'none') +
-  theme(axis.text.y = ggtext::element_markdown())
-
-p2
-
-df2 <- psmelt(physeq)
-
-# boxplot:
-p.b <- df2 %>%
-  rename(id_voluntario = Sample,
-         group = met_health,
-         variable = Species,
-         value = Abundance) %>%
-  select(id_voluntario, group, variable, value) %>% 
-  inner_join(svm.imp %>% rename(variable = rowname), by = "variable") %>% 
-  arrange(MU) %>% 
-  mutate(variable = gsub("_", " ", variable),
-         variable = fct_inorder(variable),
-         value = as.numeric(value)) %>% 
-  ggplot(aes(x = variable, y = value,
-             fill = group,
-             color = group,
-             shape = group)) +
-  geom_boxplot(alpha=.8, outlier.shape = NA) +
-  geom_point(size = .5, alpha = .3,
-             position = position_jitterdodge()) +
-  theme_bw() +
-  coord_flip() +
-  labs(y = 'Feature Value', x = 'Features',
-       fill = 'Model') +
-  scale_fill_manual(values = c( "#4C1D4BFF", "#F2704DFF")) +
-  scale_color_manual(values = c( "#4C1D4BFF", "#F2704DFF")) +
-  theme_bw()  + 
-  theme(#plot.title = element_text(face = 'bold', size = 24),
-        axis.title = element_text(size = 10),
-        axis.text = element_text(size = 8),
-        axis.text.y = element_text(face = "italic"),
-        axis.title.y = element_blank()) +
-  theme(axis.text.y = ggtext::element_markdown())
-p.b
-
-(superplot <- p.b + 
-    (p2 + theme(axis.text.y = element_blank(),
-                axis.title.y = element_blank(),
-                axis.ticks.y = element_blank())))
-
-# ggsave("./SVM_VarImp.png", 
-#        plot = superplot,
-#        width = 28,
-#        height = 18,
-#        units = "cm",
-#        dpi = 1200)
+saveRDS(roclist.2, "../results/binaryROC.rds")

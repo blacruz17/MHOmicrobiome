@@ -5,12 +5,11 @@ rm(list = ls())
 
 # Loading data ----
 library(phyloseq)
-physeq <- read_rds("./adj_physeq_MMUPHIN_mpa30_20240911.rds")
+physeq <- read_rds("../data/physeqMHO.rds")
 physeq <- microbiome::transform(physeq, "clr")
 set.seed(505)
 
 ## relative abundances table:
-
 data.RF <- data.frame(t(physeq@otu_table))
 colnames(data.RF) <- data.frame(physeq@tax_table)$Species
 
@@ -26,27 +25,16 @@ rownames(class.RF) <- rownames(data.RF)
 class.RF$class.binary <- gsub('O|NO', '', class.RF$class)
 class.binary <- factor(class.RF$class.binary)
 
-# Binary classifier -----------------------------------------------------------
+# Model preparation ------------------------------------------------------------
 # start parallel processing
-cl <- makePSOCKcluster(40)
+cl <- makePSOCKcluster(20)
 registerDoParallel(cl)
 
 ## Train/Test split ----
-# creates split based on the class labels
-inTrain <- createDataPartition(class.binary, 
-                               p = 3/4, list = FALSE)
-# selects the corresponding samples:
-trainDescr <- data.RF[inTrain, ]
-saveRDS(trainDescr, "./trainDescr_basicBinary_ranger.rds")
-
-testDescr <- data.RF[-inTrain, ]
-saveRDS(testDescr, "./testDescr_basicBinary_ranger.rds")
-
-trainClass <- class.binary[inTrain]
-saveRDS(trainClass, "./trainClass_basicBinary_ranger.rds")
-
-testClass <- class.binary[-inTrain]
-saveRDS(testClass, "./testClass_basicBinary_ranger.rds")
+trainDescr <- readRDS("../results/trainDescr_binary.rds")
+trainClass <- readRDS("../results/trainClass_binary.rds")
+testDescr <- readRDS("../results/testDescr_binary.rds")
+testClass <- readRDS("../results/testClass_binary.rds")
 
 # these should be TRUE:
 dim(trainDescr)[1] == length(trainClass)
@@ -56,18 +44,17 @@ dim(testDescr)[1] == length(testClass)
 ## Model training -----
 # creates grid of mtry values:
 mtry.grid <- expand.grid(.mtry = floor(seq(sqrt(ncol(trainDescr)), 
-                                            ncol(trainDescr), 
-                                            length.out = 5)),
-                                            .splitrule = "gini",
-                                            .min.node.size = seq(1,10))
+                                           ncol(trainDescr), 
+                                           length.out = 5)),
+                         .splitrule = "gini",
+                         .min.node.size = seq(1,10))
 # creates sequence of ntree values:
 ntrees <- c(100, 500, 1000, 1500, 2000)
 
 seeds <- vector(mode = "list", length = 101)
-for(i in 1:100) seeds[[i]] <- sample.int(1000, 100)
+for(i in 1:100) seeds[[i]] <- sample.int(1000, 196)
 ## For the last model:
-seeds[[101]] <- sample.int(1000, 1)
-
+seeds[[101]] <- sample.int(1000, 196)
 
 fitControl <- trainControl(
   method = "repeatedcv",
@@ -82,8 +69,10 @@ fitControl <- trainControl(
 )
 
 
-## no subsampling
-original <- list()
+## Upsampling ------------------------------------------------------------------
+fitControl$sampling <- "up"
+
+upsampled <- list()
 
 for (ntree in ntrees){
   print(ntree)
@@ -92,39 +81,34 @@ for (ntree in ntrees){
                metric = "Kappa",
                tuneGrid = mtry.grid,
                trControl = fitControl,
-               num.trees = ntree,
-  	       importance = "impurity")
+               num.trees = ntree)
   
   key <- toString(ntree)
-  original[[key]] <- fit
+  upsampled[[key]] <- fit
 }
 
-saveRDS(original, "./basicBinary_ranger.rds")
+saveRDS(upsampled, "../results/upsampledBinary_ranger.rds")
 
+## Downsampling ----------------------------------------------------------------
+fitControl$sampling <- "down"
 
-# with class weights:
-class_counts <- table(class.binary)
-total_samples <- sum(class_counts)
-num_classes <- length(class_counts)
-class_weights <- total_samples / (num_classes * class_counts)
-names(class_weights) <- levels(class.binary)
-print(class_weights)
+downsampled <- list()
 
-weighted <- list()
-
-for (ntree in ntrees){print(ntree)
-  set.seed(505)
+for (ntree in ntrees){
+  print(ntree)
   fit <- train(trainDescr, trainClass,
                method = 'ranger',
-               metric ="Kappa",
+               metric = "Kappa",
                tuneGrid = mtry.grid,
                trControl = fitControl,
-               num.trees = ntree,
-               classwt = class_weights)
+               num.trees = ntree)
+  
   key <- toString(ntree)
-  weighted[[key]] <- fit
+  downsampled[[key]] <- fit
 }
-saveRDS(weighted, "./basicBinary_ranger_weighted.rds")
 
-# stop parallelization:
+saveRDS(downsampled, "../results/downsampledBinary_ranger.rds")
+
+
+# stop parallelization ---------------------------------------------------------
 stopCluster(cl)
