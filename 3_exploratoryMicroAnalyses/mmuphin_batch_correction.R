@@ -14,7 +14,7 @@ library(ape)
 
 ## ----import-----------------------------------------------------------------------------------------------
 rm(list = ls())
-physeq <- readRDS("mhoCuratedEUR_AI4Food_mpa30_20240829.rds")
+physeq <- readRDS("../data/physeqMHO_raw.rds")
 metaphlanToPhyloseq <- source('./metaphlanToPhyloseq.R')$value
 
 
@@ -184,4 +184,4 @@ adj_aitchison_adonis$aov.tab
 
 
 ## ----save_adj_physeq--------------------------------------------------------------------------------------
-saveRDS(adj_physeq, "adj_physeq_MMUPHIN_mpa30_20240911.rds")
+saveRDS(adj_physeq, "../data/physeqMHO.rds")

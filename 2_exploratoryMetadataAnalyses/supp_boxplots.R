@@ -11,7 +11,7 @@ library(ggpubr)
 library(gt)
 
 
-
+# Supplementary Data from source publication
 karlsson <- read_excel("../data/suppKarlsson_PMID23719380.xlsx",
                    sheet = "Supplementary Table 3",
                    skip = 1) %>%
@@ -42,6 +42,7 @@ feng <- sampleMetadata %>%
   clean_names() %>%
   select(where(~ !all(is.na(.x))))
 
+# Supplementary Data from source publication
 feng <- read_excel("../data/suppFeng_PMID25758642.xlsx",
                    sheet = "SD 1",
                    skip = 3,
@@ -113,6 +114,7 @@ hmp <- rbind(hmp.part1, hmp.part2)
 
 summary(as.factor(hmp$subject_id))
 
+# Supplementary Data from source publication
 hmp_extra <- read_excel("../data/suppHMP_PMID31142858.xlsx",
                         sheet = "S1_Subjects") %>%
   clean_names() %>%
@@ -142,6 +144,7 @@ metacard %>%
     separate_rows(treatment, sep = ";") %>% pull(treatment) %>% unique()
 metacard %>% select(study_condition, disease) %>% distinct()
 
+# Supplementary Data from source publication
 ages.mc <- readxl::read_excel("../data/suppMetaCardis_PMID35177860.xlsx") %>%
   
   rename(sample_id = id, age = age_years) %>%
@@ -253,103 +256,9 @@ metacardis <- metacard %>%
   filter(MetObesity %in% c("MHO", "MHNO", "MUO", "MUNO"))
 
 ## AI4Food ---------------------------------------------------------------------
-ai4food <- read_csv("../data/data_mho_ai4food.csv") %>%
-  rename(subject_id = id_voluntario,
-         gender = sexo) %>%
-  mutate(sample_id = subject_id,
-         subject_id = paste0(as.character(subject_id), "_A4F"),
-         country = "ESP") %>%
-  select(-c(glu_mg_dl, hdl_mg_dl, tri_mg_dl, 
-            blood_pressure, hdl_level, trig_level, blood_glucose,
-            number_markers)) 
+ai4food <- read_csv("../data/SuppTable1.csv") 
 
-ai4food_2 <- read_tsv("../datos/tablas_export_v2sql/bioquimicas_v2.tsv",
-                      na = c("", "NA", "\\N")) %>%
-  select(id_voluntario, visita,
-         hba1c_perc, glu_mg_dl, alb_g_dl, chol_mg_dl, tri_mg_dl,
-         hdl_mg_dl, ldl_mg_dl, pcr_mg_dl, insulina_uui_ml, homa,
-         tnf_a_ui_ml, adiponectina_ug_ml) %>%
-  rename(subject_id = id_voluntario,
-         hba1c = hba1c_perc,
-         glucose = glu_mg_dl,
-         albumin = alb_g_dl,
-         cholesterol = chol_mg_dl,
-         triglycerides = tri_mg_dl,
-         hdl = hdl_mg_dl,
-         ldl = ldl_mg_dl,
-         crp = pcr_mg_dl,
-         insulin = insulina_uui_ml,
-         tnfa = tnf_a_ui_ml,
-         adiponectin = adiponectina_ug_ml) %>%
-  mutate(subject_id = paste0(as.character(subject_id), "_A4F"),
-         crp = as.numeric(gsub("<0.003", 0.003, crp)),
-         hba1c = 100 * hba1c)
-
-ai4food_3 <- read_tsv("../datos/tablas_export_v2sql/datos_antropometricos_v2.tsv",
-                      na = c("", "NA", "\\N")) %>%
-  mutate(visita = as.numeric(gsub(0, 1, visita))) %>%
-  select(id_voluntario, visita,
-         imc_kg_m2, presion_sistolica_mmhg, presion_diastolica_mmhg,
-         cadera_cm, cintura_cm, peso_actual_kg) %>%
-  rename(subject_id = id_voluntario,
-         bmi = imc_kg_m2,
-         systolic = presion_sistolica_mmhg,
-         diastolic = presion_diastolica_mmhg,
-         waist = cintura_cm,
-         hip = cadera_cm,
-         weight = peso_actual_kg) %>%
-  mutate(subject_id = paste0(as.character(subject_id), "_A4F"),
-         whr = waist/hip)
-
-ai4food <- left_join(ai4food, ai4food_2,
-                     by = c("subject_id", "visita")) %>%
-            left_join(ai4food_3,
-            by = c("subject_id", "visita"))
-
-ai4food$treatment <- "no"
-ai4food <- ai4food %>%
-  mutate(treatment = if_else(hipotensores == 1, 
-                             "antihypertensive", 
-                             treatment)) %>%
-  mutate(treatment = if_else(antidiabetico == 1, 
-                             "antidiabetic",
-                             treatment)) %>%
-  mutate(treatment = if_else(estatina == 1, 
-                             if_else(treatment != "no",
-                                     paste0(treatment, ";statins"),
-                                     "statins"),
-                             treatment)) %>%
-  mutate(treatment = if_else(reductor_de_colesterol == 1, 
-                             if_else(treatment != "no",
-                                     paste0(treatment, ";cholesterol"),
-                                     "cholesterol"),
-                             treatment))
-
-
-ai4food$disease <- "control"
-ai4food <- ai4food %>%
-  mutate(disease = if_else(hipercolesterolemia == 1,
-                           "hypercholesterolemia",
-                           disease)) %>%
-  mutate(disease = if_else(trigliceridemia == 1,
-                           "triglyceridemia",
-                           disease)) %>%
-  mutate(disease = if_else(diabetes == 1, 
-                           "diabetes", 
-                           disease))  %>%
-  mutate(disease = if_else(hipertension == 1, 
-                           "hypertension", 
-                           disease)) 
-ai4food <- ai4food[ , c(1, 14:40)]
-
-ages.ai4food <- readxl::read_excel("../datos/brutos_edad_limpio.xlsx") %>%
-  
-  rename(subject_id = vol_id, age = muestra) %>%
-  select(subject_id, age) %>%
-  mutate(subject_id = paste0(as.character(subject_id), "_A4F"))
-
-ai4food <- ai4food %>% left_join(ages.ai4food, by = "subject_id")
-
+# Join tables ------------------------------------------------------------------
 data <- bind_rows(karlsson %>%
                     mutate(study_name = "KarlssonFH_2013",
                            adiponectin = as.numeric(gsub("-", NA, adiponectin)),
@@ -373,6 +282,7 @@ data <- bind_rows(karlsson %>%
 char_cols <- sapply(data, is.character)
 data[char_cols][data[char_cols] == '-'] <- NA
 
+# unify measurement units
 data <- data %>%
   mutate(cholesterol = if_else(study_name %in% c("KarlssonFH_2013", "JieZ_2017"),
                                cholesterol * 38.67, cholesterol),
@@ -394,10 +304,7 @@ data <- data %>%
 
 
 data <- data %>%
-  mutate(gender = case_when(gender == "H" ~ "male",
-                            gender == "M" ~ "female",
-                            .default = gender),
-         disease = if_else(disease %in% c("control", "no"), "healthy", disease))
+  mutate(disease = if_else(disease %in% c("control", "no"), "healthy", disease))
 
 og_treatment <- data$treatment == "no"
 data$treatment <- str_count(data$treatment, ";") + 1
@@ -425,7 +332,7 @@ rm(physeq)
 tbl_todo <- data %>%
   filter(!is.na(met_health), !is.na(obese),
          MetObesity != "missingmissing",
-         !is.na(gender) # estorba un poco
+         !is.na(gender) 
   ) %>%
   mutate(treatment = as.factor(if_else(treatment == 0, "No", "Yes"))) %>%
   select(MetObesity,
@@ -471,7 +378,7 @@ dunn.tb
 stat.test <- data %>%
   filter(!is.na(met_health), !is.na(obese),
          MetObesity != "missingmissing",
-         !is.na(gender) # estorba un poco
+         !is.na(gender)
   ) %>%
   select(MetObesity,
          age, bmi, 
