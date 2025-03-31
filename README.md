@@ -1,5 +1,5 @@
 # MHOmicrobiome
- Microbial community analyses on the topic of metabolically healthy obesity. This repository accompanies the source publication *meter referencia publicación.*
+ Microbial community analyses on the topic of metabolically healthy obesity. This repository accompanies the source publication [REF].
 
  
 
