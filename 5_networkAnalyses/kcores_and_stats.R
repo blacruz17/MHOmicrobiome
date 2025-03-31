@@ -36,17 +36,21 @@ df_kcore  %>%
   facet_wrap(. ~ class, 
              nrow = 1,
              strip.position = "top") +
-  theme_minimal()  +
+  theme_classic()  +
   theme(strip.background = element_blank(),
         strip.text = element_text(face = "bold", size = 10),
         legend.position = "none",
-        axis.title = element_markdown()) +
+        axis.title = element_markdown(size = 10),
+        axis.text = element_text(size = 8),
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank()
+        ) +
   xlab("*k* values") +
-  ylab("% nodes with maximum *k*") 
+  ylab("% nodes with <br> maximum *k*") 
 
 
 ggsave("../figures/kcores.png",
-       width = 15,
+       width = 10,
        height = 5,
        unit = "cm",
        dpi = 1200)

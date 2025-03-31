@@ -71,7 +71,7 @@ alpha.p <- alphadiv_df  %>%
                outlier.shape = NA,
                outlier.size = 2,
                color = "black"
-               ) +
+  ) +
   geom_jitter(aes(shape = MetObesity, color = MetObesity),
               width = .2,
               size = .8) +
@@ -113,7 +113,7 @@ ggsave("../figures/alphaDiv.png",
 physeq.clr <- microbiome::transform(physeq, "clr")
 aitchison_dist <- distance(physeq.clr, method = "euclidean")
 aitchison_adonis <- adonis2(aitchison_dist ~ MetObesity,
-                                data = data.frame(sample_data(physeq.clr)))
+                            data = data.frame(sample_data(physeq.clr)))
 
 
 ## ----showAdonis------------------------------------------------------------------------------------------------------
@@ -168,15 +168,16 @@ p1 <- physeq %>%
   dist_calc("euclidean") %>%
   ord_calc(method = "PCoA") %>%
   ord_plot(color = "MetObesity",
-           # alpha = .9,
+           alpha = .8,
            auto_caption = NA,
            axes = 1:2,
            size = .6
-           ) +
+  ) +
   scale_colour_manual(values = pal) +
   theme_linedraw() +
   stat_ellipse(aes(color = MetObesity),
-               linetype = "dashed", linewidth = .8) +
+               # linetype = "dashed", 
+               linewidth = .8) +
   labs(x = "Dim1 (8.0%)",
        y = "Dim2 (4.6%)") +
   theme(legend.position = "none")
@@ -186,15 +187,16 @@ p2 <- physeq %>%
   dist_calc("euclidean") %>%
   ord_calc(method = "PCoA") %>%
   ord_plot(color = "MetObesity",
-           # alpha = .9,
-          size = .6,
+           alpha = .8,
+           size = .6,
            auto_caption = NA,
            axes = c(1,3)
   ) +
   scale_colour_manual(values = pal) +
   theme_linedraw() +
   stat_ellipse(aes(color = MetObesity),
-               linetype = "dashed", linewidth = .8) +
+               # linetype = "dashed", 
+               linewidth = .8) +
   labs(x = "Dim1 (8.0%)",
        y = "Dim3 (3.9%)") +
   theme(legend.position = "none")
@@ -204,22 +206,26 @@ p3 <- physeq %>%
   dist_calc("euclidean") %>%
   ord_calc(method = "PCoA") %>%
   ord_plot(color = "MetObesity",
-           # alpha = .9,
-          size = .6,
+           alpha = .8,
+           size = .6,
            auto_caption = NA,
            axes = c(2,3)
   ) +
   scale_colour_manual(values = pal) +
   theme_linedraw() +
   stat_ellipse(aes(color = MetObesity),
-               linetype = "dashed", linewidth = .8) +
+               # linetype = "dashed",
+               linewidth = .8) +
   labs(x ="Dim2 (4.6%)",
        y = "Dim3 (3.9%)") +
   theme(legend.title = element_blank())
 
-beta.p <- p1 + p2 + p3 & theme(axis.text = element_text(size = 12),
-                     axis.title = element_text(size = 14),
-                     legend.text = element_text(size = 12))
+beta.p <- p1 + p2 + p3 & theme(axis.text = element_text(size = 10),
+                               axis.title = element_text(size = 12),
+                               legend.text = element_text(size = 10),
+                               panel.border = element_rect(colour = "black",
+                                                           fill=NA, 
+                                                           linewidth=.3))
 
 
 ## ----saveBetaPlot----------------------------------------------------------------------------------------------------
