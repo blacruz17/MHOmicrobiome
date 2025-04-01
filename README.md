@@ -4,20 +4,11 @@
  
 
 ## Table of contents
-* [Data](#data)
 * [1.- FASTQ file preprocessing](#1-fastq-file-preprocessing)
 * [2.- Exploratory metadata analyses](#2-exploratory-metadata-analyses)
 * [3.- Exploratory gut microbiome analyses](#3-exploratory-microbiome-analyses)
 * [4.- Machine learning scripts](#4-machine-learning-scripts)
 * [5.- Network analyses](#5-network-analyses)
-
-## Data
-This directory contains supplementary tables 1 and 2:
-- `suppTable1.csv`: AI4Food patient metadata & phenotype classification
-- `suppTable2.csv`: subject IDs & subject classification obtained from `curatedMetagenomicData`
-
-> Additional patient metadata were obtained from the `curatedMetagenomicData` R package and from study source publications.
-> AI4Food raw reads can be accessed at ENA project PRJEBXXXXXX.
 
 ## 1 Fastq file preprocessing
 Bash & Perl scripts used to preprocess fastq files from the AI4Food project.
