@@ -15,6 +15,10 @@ This repository contains a set of scripts used to preprocess sequencing data, an
 ## Data 
 We provide the following files for those interested in replicating our analyses:
 
+- `physeqMHO_raw.rds`: phyloseq object before batch correction
+- `physeqMHO.rds`: phyloseq object after batch correction
+- Network files: for each phenotype, a file with edge properties (e.g.: `mho_edges.csv`) and a file with node properties (e.g.: `mho_metadata.csv`) are given.
+
 
 ## 1 Fastq file preprocessing
 
