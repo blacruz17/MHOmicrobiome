@@ -16,7 +16,6 @@ This repository contains a set of scripts used to preprocess sequencing data, an
 We provide the following files for those interested in replicating our analyses:
 
 - `physeqMHO_raw.rds`: phyloseq object before batch correction
-- `physeqMHO.rds`: phyloseq object after batch correction
 - Network files: for each phenotype, a file with edge properties (e.g.: `mho_edges.csv`) and a file with node properties (e.g.: `mho_metadata.csv`) are given.
 
 
@@ -38,6 +37,11 @@ R scripts used to generate tables & supplementary figures related to subject met
 - `metadataExploration.R`: compares biochemical and anthropometrical metadata among the four groups, generating a table with all comparisons (Table 2).
 - `supp_heatmap.R`: explores all datasets within `curatedMetagenomicData` (version 3.8) to look for studies with stool samples from adult subjects not taking antibiotics, and where at least one of our variables of interest to describe obesity and metabolic phenotypes was available. Generates Supplementary Figure 1.
 - `supp_boxplots.R`: in-depth statistical analysis accompanying the previous scripts as well as the necessary code to replicate Supplementary Figure 2.
+
+In order to fully recapitulate our analyses, you may need:
+- Supplementary Table 1 with AI4Food patient metadata.
+- Supplementary files from `curatedMetagenomicData` datasets' source publications
+- Sample metadata already available in `curatedMetagenomicData`
 
 Library requirements are specified in the beggining of each R script.
 
