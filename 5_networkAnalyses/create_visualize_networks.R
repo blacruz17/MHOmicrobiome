@@ -16,16 +16,16 @@ any(rowSums(physeq@otu_table) == 0)
 # remove 0s:
 (physeq.mho <- filter_taxa(physeq.mho,
                            flist =  filterfun(kOverA(k = 1, A = 0)),
-                           prune = TRUE)) # 147 taxa x 14 samples
+                           prune = TRUE)) # 289 taxa x 22 samples
 (physeq.muo <- filter_taxa(physeq.muo,
                            flist =  filterfun(kOverA(k = 1, A = 0)),
-                           prune = TRUE)) # 149 taxa x 31 samples
+                           prune = TRUE)) # 354 taxa x 437 samples
 (physeq.mhno <- filter_taxa(physeq.mhno,
                             flist =  filterfun(kOverA(k = 1, A = 0)),
-                            prune = TRUE)) # 165 taxa x 24 samples
+                            prune = TRUE)) # 340 taxa x 115 samples
 (physeq.muno <- filter_taxa(physeq.muno,
                             flist =  filterfun(kOverA(k = 1, A = 0)),
-                            prune = TRUE)) # 148 taxa x 29 samples
+                            prune = TRUE)) # 355 taxa x 385 samples
 
 # check:
 any(rowSums(physeq.mho@otu_table) == 0)
@@ -182,6 +182,7 @@ png("../figures/mho.png",
     units = "cm",
     res = 1200)
 plot(mho.props, 
+     layout = "spring",
      nodeColor = "feature", 
      featVecCol = phyla.mho, 
      colorVec =  pal_mho,
@@ -208,6 +209,7 @@ png("../figures/mhno.png",
     units = "cm",
     res = 1200)
 plot(mhno.props, 
+     layout = "spring",
      nodeColor = "feature", 
      featVecCol = phyla.mhno, 
      colorVec =  pal_12,
@@ -227,12 +229,13 @@ plot(mhno.props,
      cexLabels=0)
 dev.off()
 
-png("../figures/muno.png",,
+png("../figures/muno.png",
     width = 16,
     height = 16,
     units = "cm",
     res = 1200)
 plot(muno.props, 
+     layout = "spring",
      nodeColor = "feature", 
      featVecCol = phyla.muno, 
      colorVec = pal_12,
@@ -259,6 +262,7 @@ png("../figures/muo.png",
     res = 1200)
 
 plot(muo.props, 
+     layout = "spring",
      nodeColor = "feature", 
      featVecCol = phyla.muo, 
      colorVec = pal_12,
