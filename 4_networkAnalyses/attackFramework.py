@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-
-
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -13,9 +11,6 @@ import pandas
 
 import copy
 import random
-
-from google.colab import drive
-drive.mount('/content/drive')
 
 # === LOAD NETWORKS ===
 MHNO = nx.read_graphml("mhno.graphml")
