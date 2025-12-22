@@ -168,7 +168,47 @@ muno_support <- get_edge_support(muno_mb, ig.muno.mb, physeq.muno)
 muo_support <- get_edge_support(muo_mb, ig.muo.mb, physeq.muo)
 
 
-# Edge weights ------------------------
+supportDF <- bind_rows(mhno_support %>% mutate(Network = "MHNO"),
+                       mho_support %>% mutate(Network = "MHO"),
+                       muno_support %>% mutate(Network = "MUNO"),
+                       muo_support %>% mutate(Network = "MUO"))
+pal <- c("#264653", "#2A9D8F", "#703d57", "#edafb8", "#e6af2e")
+
+edge.p <- supportDF %>%
+  ggplot(aes(x = value, fill = Network)) +
+  geom_histogram(binwidth = .05) +
+  scale_fill_manual(values = pal) +
+  theme_bw() +
+  facet_wrap(~ Network, scales = "free_y") +
+  labs(x = "Edge Bootstrap Support (%)",
+       y = "Count")
+edge.p  
+edge.p
+
+ggsave("./edgeSupport.png",
+       edge.p,
+       bg = "white",
+       height = 8,
+       width = 12,
+       units = "cm",
+       dpi = 800)
+
+## stars curves ----------------------------
+
+png("starsCurves.png",
+    width = 1600, height = 1600, res = 300) 
+
+par(mfrow = c(2, 2),    
+    mar = c(4, 4, 2, 1)) 
+
+plot(mhno_mb$select, legends = FALSE, main = "MHNO")
+plot(mho_mb$select,  legends = FALSE, main = "MHO")
+plot(muno_mb$select, legends = FALSE, main = "MUNO")
+plot(muo_mb$select,  legends = FALSE, main = "MUO")
+
+dev.off()
+
+## Edge weights ------------------------
 edgeweights <- function(physeqObj, spiecObj, igraphObj){
   
   weight.mat <- symBeta(getOptBeta(spiecObj), mode = "maxabs")
