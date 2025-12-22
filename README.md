@@ -64,7 +64,7 @@ Network validation scripts:
   - `metrics_subsampledNets.py`, `attacks_subsampledNets.py`: calculate metrics & execute attacks on sets of subsampled networks
   - `analyze_subsampled_metrics.R`, `keystone_plot_subsamples.R`: analyze results from previous Python scripts
 
-All validation tests performed for AI4Food and MetaCardis cohorts can be run with the scripts provided here by selecting only the samples of interest.
+All validation tests performed for AI4Food and MetaCardis cohorts can be run with the scripts provided here by selecting only the samples of interest. Tests made on these cohorts are run on raw data before batch effect correction.
 
 ## 6 Functional analyses
 
