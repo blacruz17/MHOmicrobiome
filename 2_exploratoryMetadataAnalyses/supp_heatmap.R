@@ -3,10 +3,15 @@ library(tidyverse)
 library(ComplexHeatmap)
 library(RColorBrewer)
 library(gridtext)
+library(janitor)
 rm(list = ls())
 
+dim(sampleMetadata)
+length(unique(sampleMetadata$study_name))
 
-## Location
+
+
+## Westernized / Non-Westernized ###############################################
 
 eur <- c("USA", "CAN",  
          "ITA", "GBR", "SWE", "DEU", "AUT", "DNK", "LUX", "FRA",
@@ -29,7 +34,15 @@ dotplot.country <- sampleMetadata %>%
   summarise(eur = any(eur > 0), .groups = "drop") %>%
   arrange(eur)
 
-## stool / no
+# how many samples & studies does this exclude?:
+sampleMetadata %>%
+  mutate(eur = if_else(country %in% eur & non_westernized == "no", 1, 0)) %>%
+  filter(eur == 0) %>%
+  dim()
+
+sum(dotplot.country$eur == FALSE)
+
+## stool / no #########################
 dotplot.stool <- sampleMetadata %>%
   select(study_name, body_site) %>%
   distinct() %>%
@@ -37,7 +50,14 @@ dotplot.stool <- sampleMetadata %>%
   summarise(stool = any(body_site == "stool"), .groups = "drop") 
 
 
-## antibiotics
+sampleMetadata %>%
+  filter(body_site != "stool") %>%
+  dim()
+
+
+sum(dotplot.stool$stool == FALSE)
+
+## antibiotics  #########################
 dotplot.antb <- sampleMetadata %>%
   select(study_name, antibiotics_current_use) %>%
   distinct() %>%
@@ -46,6 +66,12 @@ dotplot.antb <- sampleMetadata %>%
             .groups = "drop",
             ) 
 
+sampleMetadata %>%
+  filter(antibiotics_current_use == "yes") %>%
+  dim()
+
+sum(dotplot.antb$antb == FALSE)
+
 
 ## age
 dotplot.age <- sampleMetadata  %>%
@@ -53,6 +79,11 @@ dotplot.age <- sampleMetadata  %>%
   group_by(study_name) %>%
   summarise(age = any(age >= 18 | is.na(age)), 
             .groups = "drop")
+sum(dotplot.age$age == FALSE)
+
+sampleMetadata %>%
+  filter(age < 18) %>%
+  dim()
 
 
 ## get all together and build dotplot
@@ -62,6 +93,7 @@ dotplot.data.1 <- dotplot.age %>%
   full_join(dotplot.stool, by = "study_name") %>%
   mutate(total = age + antb + eur + stool) %>%
   arrange(desc(total))
+
 
 table(dotplot.data.1$total)
 
@@ -112,8 +144,6 @@ dp <- dotplot.data %>%
 
 dp
 
-# Heatmap:
-
 dp.mx <- as.matrix(pivot_wider(dotplot.data,
                                id_cols = c("study_name", order), 
                                names_from = "variable", 
@@ -126,6 +156,184 @@ rm(dp.mx.2)
 
 dp.mx <- dp.mx[order.dotplot, ]
 
+
+## see all eligible samples ###############################
+elig.df <- sampleMetadata %>% 
+  # Westernized
+  mutate(eur = if_else(country %in% eur & non_westernized == "no", 1, 0)) %>%
+  filter(eur == 1) %>%
+  # Stool samples
+  filter(body_site == "stool" ) %>%
+  # Age
+  filter(age >= 18 | is.na(age)) %>%
+  # Antibiotics
+  filter(antibiotics_current_use == "no" | is.na(antibiotics_current_use)) %>%
+  janitor::remove_empty()
+
+dim(elig.df)
+
+length(unique(elig.df$sample_id))
+length(unique(elig.df$study_name))
+
+# eligible samples w/ metadata: ###############################
+elig.samples <- elig.df %>%
+  select(sample_id, study_name,
+         BMI, systolic_p, dyastolic_p,
+         fasting_glucose, glucose, triglycerides, hdl,
+         treatment) %>%
+  reshape2::melt(id.vars = c("sample_id", "study_name")) %>%
+  group_by(sample_id) %>%
+  summarise(values = any(!is.na(value))) %>%
+  filter(values == TRUE)
+
+length(unique(elig.samples$sample_id))
+
+# number of studies:
+elig.df %>%
+  filter(sample_id %in% elig.samples$sample_id) %>%
+  pull(study_name) %>%
+  unique() %>%
+  length()
+
+
+# keep only eligible samples:
+elig.df <- elig.df %>%
+  filter(sample_id %in% elig.samples$sample_id) 
+
+
+# diseases: ##############
+sort(unique(elig.df$study_condition))
+
+non.elig.df <- elig.df %>% 
+  filter(study_condition %in% 
+           c("adenoma", "asthma", "CRC", "CDI", "IBD", "ME/CFS", 
+             "melanoma", "migraine", "PD", "T1D") |
+         study_name == "ChuDM_2017") %>% 
+  remove_empty() 
+
+dim(non.elig.df)
+
+# number of studies remaining:
+sort(unique(non.elig.df$study_name))
+
+
+elig.df.2 <- elig.df %>% 
+  filter(!study_condition %in% 
+           c("adenoma", "asthma", "CRC", "CDI", "IBD", "ME/CFS", 
+             "melanoma", "migraine", "PD", "T1D"),
+         study_name != "ChuDM_2017") %>% 
+  remove_empty() 
+
+# how many studies were left out?
+sum(!unique(non.elig.df$study_name) %in% unique(elig.df.2$study_name))
+unique(non.elig.df$study_name)[!unique(non.elig.df$study_name) %in% unique(elig.df.2$study_name)]
+
+unique(elig.df.2$study_name)
+length(unique(elig.df.2$sample_id))
+
+# "AsnicarF_2021" UNAVAILABLE 
+# "HMP_2012" UNAVAILABLE
+# "LeChatelierE_2013" UNAVAILABLE    
+# "LifeLinesDeep_2016" UNAVAILABLE   
+# "HMP_2019_ibdmdb" UNAVAILABLE          
+# "NagySzakalD_2017"  UNAVAILABLE, chronic fatigue
+unavail <- c("AsnicarF_2021", "HMP_2012",
+             "LeChatelierE_2013", "NielsenHB_2014", 
+             # Nielsen included here because it has samples in common with LeChatelier
+             "LifeLinesDeep_2016",
+             "HMP_2019_ibdmdb", "NagySzakalD_2017")
+elig.df.2 %>%
+  filter(study_name %in% unavail) %>%
+  dim()
+
+aa <- elig.df.2 %>%
+  filter(study_name %in% unavail) %>%
+  pull(sample_id) %>% unique() 
+length(aa) # 2940 samples: measured but unavailable
+
+bb <- elig.df.2 %>%
+  filter(!study_name %in% unavail) %>%
+  pull(sample_id) %>% unique() 
+
+cc <- elig.df.2 %>%
+  pull(sample_id) %>% unique() 
+
+elig.df.3 <- elig.df.2 %>% filter(!study_name %in% unavail)
+length(unique(elig.df.3$study_name))
+length(unique(elig.df.3$sample_id)) # 6007 - 2940 = 3067 remaining
+
+nonmeasured <- c("BedarfJR_2017", "DeFilippisF_2019", "FerrettiP_2018",
+                 "HanniganGD_2017", "HansenLBS_2018", "IjazUZ_2017",
+                 "KeohaneDM_2020", "LiJ_2014", 
+                 "Obregon-TitoAJ_2015", "RaymondF_2016",
+                 "SankaranarayananK_2015", "SchirmerM_2016", "ThomasAM_2018a",
+                 "ThomasAM_2018b", "VogtmannE_2016", "WirbelJ_2018","XieH_2016",
+                 "ZellerG_2014"  )
+length(nonmeasured)
+
+elig.df.3 %>%
+  filter(study_name %in% nonmeasured) %>%
+  dim()
+
+elig.df.3 %>%
+  filter(study_name %in% nonmeasured) %>%
+  pull(sample_id) %>%
+  unique() %>%
+  length() # 1545 samples
+
+
+# "BedarfJR_2017"  NON-MEASURED 
+# "DeFilippisF_2019"  NON-MEASURED   # vegans!  
+# "FerrettiP_2018"   NON-MEASURED
+# "HanniganGD_2017"  NON-MEASURED     
+# "HansenLBS_2018"  NON-MEASURED/ No healthy
+# "IjazUZ_2017"  NON-MEASURED         
+# "KeohaneDM_2020" NON-MEASURED
+# "LiJ_2014"  No healthy, not enough metadata 
+# "NielsenHB_2014"  Not found  
+# "Obregon-TitoAJ_2015" NON-MEASURED  
+# "RaymondF_2016" NON-MEASURED         
+# "SankaranarayananK_2015" NON-MEASURED
+# "SchirmerM_2016"  Not found
+# "ThomasAM_2018a"  Not found       
+# "ThomasAM_2018b"  Not found
+# "VogtmannE_2016"  NON-MEASURED       
+# "WirbelJ_2018"  NON-MEASURED         
+# "XieH_2016"     NON-MEASURED
+# "ZellerG_2014"  NON-MEASURED 
+
+elig.df.4 <- elig.df.3 %>%
+  filter(!study_name %in% nonmeasured)
+dim(elig.df.4)
+unique(elig.df.4$study_name)
+length(unique(elig.df.4$sample_id)) 
+
+# "Heitz-BuschartA_2016"  family, other diseases       
+# "VincentC_2016" hospitalized patients        
+
+elig.df.4 %>%
+  filter(study_name %in% c("Heitz-BuschartA_2016",
+                           "VincentC_2016")) %>%
+  dim()
+
+elig.df.4 %>%
+  filter(study_name %in% c("Heitz-BuschartA_2016",
+                           "VincentC_2016")) %>%
+  pull(sample_id) %>% unique() %>% length()
+
+final.df <- elig.df.4 %>%
+  filter(!study_name %in% c("Heitz-BuschartA_2016",
+                           "VincentC_2016"))
+
+length(final.df$sample_id) 
+
+final.df %>%
+  select(study_name, sample_id) %>%
+  distinct() %>%
+  group_by(study_name) %>%
+  count()
+
+
 ################################################################################
 # HEATMAP ######################################################################
 ################################################################################
@@ -135,6 +343,7 @@ data.hm <- sampleMetadata %>%
          BMI, systolic_p, dyastolic_p, gender,
          fasting_glucose, glucose, triglycerides, hdl,
          treatment) %>%
+ 
   mutate(glucose_new = if_else(!is.na(fasting_glucose),
                                fasting_glucose, glucose),
          blood_pressure = if_else(!is.na(systolic_p),
@@ -276,8 +485,7 @@ ht_list <- ht.2 + ht.1
 draw(ht_list, 
      ht_gap = unit(2, "mm"))
 
-
-png("../figures/heatmap.png",
+png("supp_heatmap.png",
     width = 15, height = 18, units = "cm", res=1200)
 draw(ht_list, 
      ht_gap = unit(2, "mm"))
