@@ -193,7 +193,7 @@ netdict = {
 }
 
 all_nodes = set().union(*[G.nodes() for G in netdict.values()])
-print("Total de nodos: ", len(all_nodes))
+print("Total number of nodes: ", len(all_nodes))
 
 metrics = {}
 
@@ -302,16 +302,16 @@ plt.savefig("./kcores.png",
 
 
 df = pd.DataFrame(list(cores_MHO.items()), columns=['Node', 'k-core'])
-df.to_csv('./MHO_kcores_20251120.csv', index=False)
+df.to_csv('./MHO_kcores.csv', index=False)
 
 df = pd.DataFrame(list(cores_MHNO.items()), columns=['Node', 'k-core'])
-df.to_csv('./MHNO_kcores_20251120.csv', index=False)
+df.to_csv('./MHNO_kcores.csv', index=False)
 
 df = pd.DataFrame(list(cores_MUO.items()), columns=['Node', 'k-core'])
-df.to_csv('./MUO_kcores_20251120.csv', index=False)
+df.to_csv('./MUO_kcores.csv', index=False)
 
 df = pd.DataFrame(list(cores_MUNO.items()), columns=['Node', 'k-core'])
-df.to_csv('./MUNO_kcores_20251120.csv', index=False)
+df.to_csv('./MUNO_kcores.csv', index=False)
 
 # === Keystone Taxa Calculation ===
 
