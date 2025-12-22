@@ -10,7 +10,7 @@ library(tidyverse)
 
 rm(list = ls())
 
-# ---- Generar objetos phyloseq para cada grupo --------------------------------
+# ---- Get phyloseq objects for each phenotype ---------------------------------
 physeq <- readRDS("physeq_adj.rds")
 
 (physeq.mho  <- subset_samples(physeq, MetObesity == "MHO")) # 19 samples 
