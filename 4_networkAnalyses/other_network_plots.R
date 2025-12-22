@@ -170,6 +170,32 @@ ggsave("./kcores_20251128.png",
        dpi = 1200)
 
 
+## stats ---------------------------------------------------------------------
+shortest_paths <- fromJSON("../results/shortest_paths.json")
+metrics <- read_csv("../results/network_metrics.csv")[, 2:6]
+
+metrics$red <- as.factor(metrics$Network)
+
+kruskal_degree <- kruskal.test(degree ~ red, data = metrics)
+kruskal_betweenness <- kruskal.test(betweenness ~ red, data = metrics)
+kruskal_closeness <- kruskal.test(closeness ~ red, data = metrics)
+
+print(kruskal_degree)
+print(kruskal_betweenness)
+print(kruskal_closeness)
+
+df_paths <- do.call(rbind, lapply(names(shortest_paths), function(red) {
+  data.frame(longitud = unlist(shortest_paths[[red]]), red = red)
+}))
+
+df_paths$red <- as.factor(df_paths$red)
+
+kruskal_spl <- kruskal.test(longitud ~ red, data = df_paths)
+print(kruskal_spl)
+
+p.adjust(c(kruskal_degree$p.value, kruskal_betweenness$p.value, 
+           kruskal_closeness$p.value, kruskal_spl$p.value),
+         method = "BH")
 
 # Network subsampling analyses -------------------------------------------------
 net100 <- read_csv("./subsampledNetsData.csv") 
