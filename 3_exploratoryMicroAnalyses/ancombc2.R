@@ -10,16 +10,23 @@ library(doParallel)
 library(RColorBrewer)
 library(ggtext)
 
-physeq <- readRDS("../data/physeqMHO.rds")
+rm(list = ls())
+
+## ----load------------------------------------------------------------------------------------------------------------
+physeq <- readRDS("physeq_adj.rds")
+pal <- c("#264653", "#2A9D8F", "#703d57", "#edafb8", "#e6af2e")
 physeq.abs <- transform_sample_counts(physeq, function(x) round(1E6 * x))
 
 set.seed(123)
 cl <- makePSOCKcluster(4)
 registerDoParallel(cl)
 
-output = ancombc2(data = physeq.abs, tax_level = "Species",
-                  fix_formula = "MetObesity", rand_formula = NULL,
-                  p_adj_method = "holm", pseudo_sens = TRUE,
+output = ancombc2(data = physeq.abs, 
+                  tax_level = "Species",
+                  fix_formula = "MetObesity + age + sex + bmi_kg_m2", 
+                  rand_formula = NULL,
+                  p_adj_method = "holm", 
+                  pseudo_sens = TRUE,
                   prv_cut = 0, 
                   lib_cut = 1000, s0_perc = 0.05,
                   group = "MetObesity", struc_zero = TRUE, neg_lb = TRUE,
@@ -31,7 +38,7 @@ output = ancombc2(data = physeq.abs, tax_level = "Species",
                   em_control = list(tol = 1e-5, max_iter = 100),
                   lme_control = lme4::lmerControl(),
                   mdfdr_control = list(fwer_ctrl_method = "holm", B = 100),
-                                       )
+)
 
 stopCluster(cl)
 
@@ -44,7 +51,7 @@ df_fig_pair1 = res_pair %>%
                   diff_MetObesityMUNO_MetObesityMHO == 1 |
                   diff_MetObesityMUO_MetObesityMHO == 1 |
                   diff_MetObesityMUO_MetObesityMUNO == 1
-                ) %>%
+  ) %>%
   dplyr::mutate(lfc1 = ifelse(diff_MetObesityMHO == 1, 
                               round(lfc_MetObesityMHO, 2), 0),
                 lfc2 = ifelse(diff_MetObesityMUO == 1, 
@@ -121,7 +128,7 @@ p <- df_fig_pair %>%
 
 p
 
-ggsave("../figures/diffAbundance.png",
+ggsave("./diffAbundance_adjusted.png",
        plot = p,
        bg = "white",
        height = 9.7,
