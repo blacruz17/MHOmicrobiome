@@ -4,6 +4,7 @@ Microbial community analyses on the topic of metabolically healthy obesity.
 This repository contains a set of scripts used to preprocess sequencing data, analyze metadata, explore gut microbiome profiles, and perform network-based analyses. Our code focuses on the comparison of four groups encompassing different metabolic health and obesity phenotypes.
 
 ## Table of contents
+* [Data](#data)
 * [1.- FASTQ file preprocessing](#1-fastq-file-preprocessing)
 * [2.- Exploratory metadata analyses](#2-exploratory-metadata-analyses)
 * [3.- Exploratory gut microbiome analyses](#3-exploratory-gut-microbiome-analyses)
@@ -11,6 +12,13 @@ This repository contains a set of scripts used to preprocess sequencing data, an
 * [5.- Network validation](#5-network-validation)
 * [6.- Functional analyses](#6-functional-analyses)
 
+## Data
+
+MetaPhlAn4 taxonomy tables are given for:
+- The whole cohort used for analyses (`whole_cohort_data.csv`)
+- AI4Food longitudinal analyses (`a4f_data.csv`)
+
+These tables can be combined with the metadata (see [exploratory metadata analyses scripts](#2-exploratory-metadata-analyses)) to obtain Phyloseq objects for subsequent analyses.
 
 ## 1 Fastq file preprocessing
 
