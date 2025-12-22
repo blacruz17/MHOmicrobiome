@@ -14,7 +14,9 @@ This repository contains a set of scripts used to preprocess sequencing data, an
 
 ## 1 Fastq file preprocessing
 
-Scripts used to preprocess fastq files. All files were preprocessed using `fastp` for quality control, including filtering of host reads. This was done using a Nextflow script (`preprocess.nf`). Bash scripts for running this pipeline on paired-end or single-end reads are provided.
+Scripts used to preprocess fastq files. 
+- All files were preprocessed using `fastp` for quality control, including filtering of host reads. This was done using a Nextflow script (`preprocess.nf`). Bash scripts for running this pipeline on paired-end or single-end reads are provided.
+- Taxonomic profiling was performed with `metaphlanScript.sh`. Read subsampling was performed with `metaphlanScript_subsampling.sh` (shown for 5 million reads, same script can be modified to adjust for desired read depth)
 
 ## 2 Exploratory metadata analyses
 R scripts used to generate tables & supplementary figures related to subject metadata:
