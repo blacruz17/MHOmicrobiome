@@ -11,8 +11,8 @@
 
 module load humann/4.0
 
-base_input="/home/proyectos/imdeaalim/alba/paper_blanca/all_results/humann_mho"
-base_output="/home/proyectos/imdeaalim/alba/paper_blanca"
+base_input="humann_results"
+base_output="humann_post_results"
 split_dir="$base_output/split_tables"
 mkdir -p "$split_dir"
 
