@@ -1,7 +1,7 @@
+# Network topology of the gut microbiome associates with metabolic health in obesity
 
 [![DOI](https://zenodo.org/badge/951857774.svg)](https://doi.org/10.5281/zenodo.19484217)
 
-# Network topology of the gut microbiome associates with metabolic health in obesity
 
 Microbial community analyses on the topic of metabolically healthy obesity.
 
