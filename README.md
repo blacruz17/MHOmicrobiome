@@ -1,4 +1,7 @@
-# MHOmicrobiome
+# Network topology of the gut microbiome associates with metabolic health in obesity
+
+[![DOI](https://zenodo.org/badge/951857774.svg)](https://doi.org/10.5281/zenodo.19484217)
+
 Microbial community analyses on the topic of metabolically healthy obesity.
 
 This repository contains a set of scripts used to preprocess sequencing data, analyze metadata, explore gut microbiome profiles, and perform network-based analyses. Our code focuses on the comparison of four groups encompassing different metabolic health and obesity phenotypes.
