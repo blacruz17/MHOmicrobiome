@@ -1,6 +1,7 @@
 
 [![DOI](https://zenodo.org/badge/951857774.svg)](https://doi.org/10.5281/zenodo.19484217)
 
+<a href="https://doi.org/10.5281/zenodo.19484217"><img src="https://zenodo.org/badge/951857774.svg" alt="DOI"></a>
 
 # Network topology of the gut microbiome associates with metabolic health in obesity
 
