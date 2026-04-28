@@ -24,6 +24,8 @@ MetaPhlAn4 taxonomy tables are given for:
 
 These tables can be combined with the metadata (see [exploratory metadata analyses scripts](#2-exploratory-metadata-analyses)) to obtain Phyloseq objects for subsequent analyses.
 
+Network `graphml` and edge weight files are also provided.
+
 ## 1 Fastq file preprocessing
 
 Scripts used to preprocess fastq files. 
