@@ -23,7 +23,7 @@ suppressPackageStartupMessages({
 
 # Load ANCOM-BC2 results
 
-out <- readRDS("Ancom-bc/diffAbundance_sep25_GO/ANCOMBC2_20251013_allvariable_top1000.RDS")
+out <- readRDS("./ANCOMBC2_20251013_allvariable_top1000.RDS")
 res_pair <- out$res_pair
 
 # (1) Heatmap of LFCs for all significant pairwise contrasts
