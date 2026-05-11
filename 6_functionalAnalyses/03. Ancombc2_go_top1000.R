@@ -146,7 +146,7 @@ input_top1000 <- input_top1000 %>%
 
 # 7) Load and align metadata
 
-meta_data <- read_csv("Data/metadatos_20250915.csv", show_col_types = FALSE)
+meta_data <- read_csv("Data/metadatos_20250915.csv", show_col_types = FALSE) # study metadata
 
 samples_top1000 <- colnames(input_top1000)
 
