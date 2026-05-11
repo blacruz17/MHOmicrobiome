@@ -44,7 +44,7 @@ colnames(input_data_filtered) <- colnames(input_data_filtered) %>%
 # 3) Restrict rows to GO candidates (derived in the previous notebook/script)
 
 go_candidates <- read_excel(
-  "C:/Users/alba.perez/OneDrive - FUNDACION IMDEA-ALIMENTACION/paper_blanca/Data/my_GO_leaves_with_immediate_and_global_ancestor.xlsx"
+  "./my_GO_leaves_with_immediate_and_global_ancestor.xlsx"
 )
 
 go_candidates <- go_candidates$GO_ID
@@ -196,7 +196,7 @@ out <- ancombc2(
   verbose       = TRUE
 )
 
-out <- readRDS("Ancom-bc/diffAbundance_sep25_GO/ANCOMBC2_20251013_allvariable_top1000.RDS")
+saveRDS(out, "./ANCOMBC2_20251013_allvariable_top1000.RDS")
 
 
 
